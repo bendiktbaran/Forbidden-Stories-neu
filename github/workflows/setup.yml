@@ -1,0 +1,94 @@
+name: Setup Forbidden Stories App
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Create package.json
+      run: |
+        cat > package.json << 'EOF'
+        {
+          "name": "forbidden-stories",
+          "version": "0.1.0",
+          "private": true,
+          "scripts": {
+            "dev": "next dev",
+            "build": "next build",
+            "start": "next start",
+            "lint": "next lint"
+          },
+          "dependencies": {
+            "next": "14.0.4",
+            "react": "^18",
+            "react-dom": "^18",
+            "next-themes": "^0.2.1",
+            "@radix-ui/react-tabs": "^1.0.4",
+            "@radix-ui/react-select": "^2.0.0",
+            "@radix-ui/react-checkbox": "^1.0.4",
+            "@radix-ui/react-label": "^2.0.2",
+            "@radix-ui/react-slot": "^1.0.2",
+            "class-variance-authority": "^0.7.0",
+            "clsx": "^2.0.0",
+            "lucide-react": "^0.294.0",
+            "tailwind-merge": "^2.0.0",
+            "tailwindcss-animate": "^1.0.7"
+          },
+          "devDependencies": {
+            "typescript": "^5",
+            "@types/node": "^20",
+            "@types/react": "^18",
+            "@types/react-dom": "^18",
+            "autoprefixer": "^10.0.1",
+            "postcss": "^8",
+            "tailwindcss": "^3.3.0",
+            "eslint": "^8",
+            "eslint-config-next": "14.0.4"
+          }
+        }
+        EOF
+        
+    - name: Create app structure
+      run: |
+        mkdir -p app/components app/api/story app/api/image
+        
+    - name: Create next.config.js
+      run: |
+        cat > next.config.js << 'EOF'
+        /** @type {import('next').NextConfig} */
+        const nextConfig = {
+          experimental: {
+            appDir: true,
+          },
+        }
+        module.exports = nextConfig
+        EOF
+        
+    - name: Create vercel.json
+      run: |
+        cat > vercel.json << 'EOF'
+        {
+          "buildCommand": "next build",
+          "installCommand": "npm install --legacy-peer-deps",
+          "outputDirectory": ".next",
+          "devCommand": "next dev"
+        }
+        EOF
+        
+    - name: Commit and push
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Setup Forbidden Stories app structure" || exit 0
+        git push
